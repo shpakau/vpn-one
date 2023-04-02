@@ -26,17 +26,17 @@ public class VPNClient {
     public synchronized void start() throws Exception {
         if (running.compareAndSet(false, true)) {
             try {
-                // Start WireGuard tunnel
+                // Запуск туннеля WireGuard
                 tunnel = new Tunnel(configPath, new FileConfigStore(configPath), new WgQuickBackend(wgQuickPath));
                 tunnel.setState(Tunnel.State.UP);
 
-                // Set DNS resolver
+                // Установите DNS-резольвер
                 RootShell.run("ndc resolver setnetdns vpn0 8.8.8.8 8.8.4.4");
 
-                // Add routing rule
+                // Добавляем правило маршрутизации
                 RootShell.run("ip rule add table 51820 priority 1000");
 
-                // Add firewall rules
+                // Добавляем правила брандмауэра
                 RootShell.run("iptables -I OUTPUT -o vpn0 -j ACCEPT");
                 RootShell.run("iptables -I INPUT -i vpn0 -j ACCEPT");
                 RootShell.run("iptables -I FORWARD -i vpn0 -j ACCEPT");
@@ -53,20 +53,20 @@ public class VPNClient {
     public synchronized void stop() {
         if (running.compareAndSet(true, false)) {
             try {
-                // Remove firewall rules
+                // Удалить правила брандмауэра
                 RootShell.run("iptables -D OUTPUT -o vpn0 -j ACCEPT");
                 RootShell.run("iptables -D INPUT -i vpn0 -j ACCEPT");
                 RootShell.run("iptables -D FORWARD -i vpn0 -j ACCEPT");
                 RootShell.run("iptables -D FORWARD -o vpn0 -j ACCEPT");
                 RootShell.run("iptables -t nat -D POSTROUTING -o vpn0 -j MASQUERADE");
 
-                // Remove routing rule
+                // Удалить правило маршрутизации
                 RootShell.run("ip rule del table 51820");
 
-                // Unset DNS resolver
+                // Неустановленный DNS-резольвер
                 RootShell.run("ndc resolver setnetdns vpn0 \"\"");
 
-                // Stop WireGuard tunnel
+                // Остановить туннель WireGuard
                 if (tunnel != null) {
                     tunnel.setState(Tunnel.State.DOWN);
                     tunnel = null;
@@ -82,29 +82,29 @@ public class VPNClient {
     }
 
     public static void main(String[] args) throws Exception {
-        // Set up VPN client
+        // Настройка VPN-клиента
         String configPath = "config/wg0.conf"; // путь к конфигурационному файлу WireGuard
         String wgQuickPath = "/usr/bin/wg-quick"; // путь к исполняемому файлу wg-quick
         VPNClient client = new VPNClient(configPath, wgQuickPath);
-        // Start VPN connection
+        // Начать VPN-соединение
         client.start();
 
-        // Wait for connection to be established
+        // Подождите, пока соединение будет установлено
         while (!client.isRunning()) {
             Thread.sleep(1000);
         }
 
-        // Print status
-        System.out.println("VPN connection is running");
+        // Статус
+        System.out.println("VPN-соединение запущено");
 
-        // Wait for user to stop VPN connection
-        System.out.println("Press Enter to stop VPN connection");
+        // Ожидаем, пока пользователь прекратит VPN-соединение
+        System.out.println("Нажмите Enter для остановки VPN-соединения");
         System.in.read();
 
-        // Stop VPN connection
+        // Остановить VPN-соединение
         client.stop();
 
-        // Print status
-        System.out.println("VPN connection has been stopped");
+        // Статус
+        System.out.println("VPN-соединение было остановлено");
     }
 }
