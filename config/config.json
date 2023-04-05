@@ -1,0 +1,6 @@
+{
+  "serverAddress": "192.168.1.1",
+  "serverPort": 51820,
+  "privateKey": "cO3TUL33sVbbHTl... (64 символа)",
+  "vpnAddress": "10.0.0.2/32"
+}

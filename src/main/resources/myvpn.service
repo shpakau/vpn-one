@@ -1,0 +1,13 @@
+[Unit]
+Description=MyVPN Server
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/java -jar /path/to/myvpn-server.jar
+User=vpnuser
+Group=vpnuser
+WorkingDirectory=/path/to/myvpn-server/
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
